@@ -1,0 +1,52 @@
+{
+  "font_family": "Helvetica",
+  "title_font_size": 30,
+  "content_font_size": 24,
+  "card_width": 4.0,
+  "card_height": 2.5,
+  "margin": 0.1,
+  "background_color": "white",
+  "text_color": "black",
+  "border": true,
+  "border_color": "gray",
+  "cards_per_page": 4,
+  "layout": "2x2_grid",
+  "orientation": "landscape",
+  "spacing_between_cards": 0.0,
+  "header_text": "Brewvino Restaurant",
+  "show_header": true,
+  "header_font_size": 16,
+  "date_format": "MMM DD, YYYY",
+  "time_format": "h:mm A",
+  "custom_styling": {
+    "title_bold": true,
+    "title_underline": false,
+    "content_italic": false,
+    "border_width": 1,
+    "corner_radius": 0,
+    "shadow": false
+  },
+  "advanced_options": {
+    "logo_path": "",
+    "watermark_text": "",
+    "footer_text": "Thank you for dining with us!",
+    "qr_code": false,
+    "barcode": false
+  },
+  "color_scheme": {
+    "primary_color": "#2C3E50",
+    "secondary_color": "#E74C3C",
+    "accent_color": "#F39C12",
+    "background_gradient": false
+  },
+  "paper_settings": {
+    "page_size": "letter",
+    "orientation": "portrait",
+    "margins": {
+      "top": 0.5,
+      "bottom": 0.5,
+      "left": 0.5,
+      "right": 0.5
+    }
+  }
+}
