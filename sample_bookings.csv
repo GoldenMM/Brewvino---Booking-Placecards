@@ -1,9 +1,20 @@
-name,table_number,booking_time,party_size
-John Smith,5,7:30 PM,4
-Jane Doe,3,8:00 PM,2
-Mike Johnson,1,6:45 PM,6
-Sarah Wilson,7,8:15 PM,3
-David Brown,2,7:00 PM,5
-Lisa Garcia,4,8:30 PM,2
-Tom Anderson,6,7:15 PM,4
-Emma Thompson,8,8:45 PM,8
+Date,Service or Event,Time,Number of People,Booked At,Customer,Company,Table(s),Section,Status,Phone,Email,Booked By,Booked By Phone,Booked By Email,Booked By Company,Tags,Booking Options,Payment Amount,Payment Type,Transaction Id,Booking reference,Staff Name,Booking Method,Multiple Venues,Notes,Customer Notes,Links,Visits,AVG Spend,Membership Number
+"2025-06-29","Lunch","11:41 AM","2","2025-06-29 11:41 AM","Walk In ","","B31","Balcony","Seated","","","","","","","","","","","","68504710","","walkin","","","","","","0.00","",""
+"2025-06-29","Lunch","12:00 PM","5","2025-06-25 3:04 PM","Cecil Ledesma","","2","Red Carpet","Seated","","","","","","","","Standard Booking $10 x 5","0","PreAuth","seti_1RdnQ9KxCLuaUDs13z4cGHX1","74694128","","online","","","","","1","0.00","",""
+"2025-06-29","Lunch","12:21 PM","2","2025-06-29 12:21 PM","Walk In ","","1","Red Carpet","Seated","","","","","","","","","","","","70903383","","walkin","","","","","","0.00","",""
+"2025-06-29","Lunch","12:30 PM","8","2025-06-27 11:49 AM","Brendon MCPHERSON","","6,7","Red Carpet,Red Carpet","Seated","","","","","","","","Standard Booking $10 x 6","0","PreAuth","seti_1ReTIiKxCLuaUDs1Z1V5XG9M","35780726","","online","","Some elderly pax, no barstool tables please. Red carpet table if available please.","","","8","0.00","",""
+"2025-06-29","Lunch","12:30 PM","7","2025-06-28 7:18 PM","Oliver Dinkelman","","12","Red Carpet","Seated","=""+61 448 140 277""","oliver@cadin.com.au","","","","","","Standard Booking $10 x 7","0","PreAuth","seti_1RewnrKxCLuaUDs1nA3Z2pAh","49131565","","online","","","","","1","0.00","",""
+"2025-06-29","Lunch","12:42 PM","4","2025-06-09 7:33 PM","Adrian Talbot","","B21","Balcony","Seated","=""+61403329245""","talbot.adrian@gmail.com","","","","","","Standard Booking $10 x 4","0","PreAuth","seti_1RY3zbKxCLuaUDs1S5gHoi4Q","08394924","","online","","Table on the balcony please","","","2","0.00","",""
+"2025-06-29","Lunch","12:45 PM","2","2025-06-29 11:57 AM","Michael Docker","Fortescue","B24","Balcony","Seated","","","","","","","","Standard Booking $10 x 2","","","","69455685","","phone","","","","","2","0.00","",""
+"2025-06-29","Lunch","1:00 PM","3","2025-06-23 7:56 PM","Michelle Boyes","","B22","Balcony","Seated","","","","","","","","Standard Booking $10 x 3","0","PreAuth","seti_1Rd916KxCLuaUDs1mXYFLXOF","19368215","","online","","Please can we have a window seat with a view. This is for a birthday lunch.","","","2","0.00","",""
+"2025-06-29","Dinner","2:53 PM","6","2025-06-28 8:06 PM","Igor Ostapenko","","2","Red Carpet","Seated","","","","","","","","","0","PreAuth","seti_1RexXZKxCLuaUDs14Iwz0Xyo","52011319","","online","","","","","3","0.00","",""
+"2025-06-29","Dinner","3:00 PM","3","2025-06-27 3:44 PM","Kim Praetz","","B21","Balcony","Unconfirmed","=""+61 400 451 547""","kimhey1@bigpond.com","","","","","","","","","","10289710","Dan","phone","","","","","1","0.00","",""
+"2025-06-29","Dinner","4:30 PM","2","2025-06-29 2:41 PM","jeff ","","B24","Balcony","Pending Payment","=""+61407990554""","","","","","","","","","","","79289813","","phone","","","","","2","0.00","",""
+"2025-06-29","Dinner","5:00 PM","10","2025-06-28 4:00 PM","Annie Smith","","8,9","Red Carpet,Red Carpet","Confirmed","","","","","","","","","0","PreAuth","seti_1RethQKxCLuaUDs1sBemrPJ3","37255186","","online","","Need pram space (7people, 1pram)
+
+Mother's Birthday","","","1","0.00","",""
+"2025-06-29","Dinner","6:00 PM","2","2025-06-22 7:00 PM","Guy Scott","","4","Red Carpet","Unconfirmed","=""+61407004493""","","","","","","","","","","","90039378","Km","phone","","Table 4 please - 50th birthday","","","","0.00","",""
+"2025-06-29","Dinner","6:00 PM","2","2025-06-28 5:27 PM","oliver hedley","","B27","Balcony","Confirmed","=""+61493219809""","ohedley1@gmail.com","","","","","","","0","PreAuth","seti_1RenDcKxCLuaUDs1XfEy6rKi","12256497","","online","","2 year anniversary. nice table
+2 year anniversary. nice table","","","","0.00","",""
+"2025-06-29","Dinner","6:30 PM","7","2025-06-28 12:20 PM","Inga Clover","","12","Red Carpet","Confirmed","","","","","","","","","0","PreAuth","seti_1ReqGOKxCLuaUDs1fH436ig5","24010556","","online","","","","","","0.00","",""
+"2025-06-29","Dinner","6:30 PM","2","2025-06-29 2:52 PM","David Kennedy","","5","Red Carpet","Pending Payment","=""+61439038006""","","","","","","","","","","","79979787","","phone","","","","","","0.00","",""

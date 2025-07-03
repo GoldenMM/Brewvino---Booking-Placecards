@@ -137,6 +137,54 @@ def generate_preview_card(design_specs):
         st.error(f"Preview generation failed: {str(e)}")
         return None
 
+def capitalize_customer_name(name):
+    """Properly capitalize customer names"""
+    if pd.isna(name) or name == "":
+        return "Guest"
+    
+    # Convert to string and strip whitespace
+    name = str(name).strip()
+    
+    # Handle special cases
+    if name.lower() == "walk in":
+        return "Walk In"
+    
+    # Split by spaces and capitalize each word
+    words = name.split()
+    capitalized_words = []
+    
+    for word in words:
+        if word:  # Skip empty strings
+            # Handle common prefixes and suffixes
+            if word.lower() in ['mc', 'mac', 'o\'', 'de', 'van', 'von', 'la', 'le']:
+                capitalized_words.append(word.capitalize())
+            else:
+                # Standard title case
+                capitalized_words.append(word.capitalize())
+    
+    return ' '.join(capitalized_words)
+
+def extract_table_numbers(table_string):
+    """Extract and clean table numbers from table string, removing letters"""
+    import re
+    if pd.isna(table_string) or table_string == "":
+        return "TBD"
+    
+    # Split by comma and clean each table
+    tables = str(table_string).split(',')
+    cleaned_tables = []
+    
+    for table in tables:
+        # Extract only numbers from each table
+        numbers = re.findall(r'\d+', table.strip())
+        if numbers:
+            cleaned_tables.append(numbers[0])  # Take first number found
+    
+    if cleaned_tables:
+        return ','.join(cleaned_tables)
+    else:
+        return "TBD"
+
 def calculate_end_time(booking_time):
     """Calculate end time by adding 2 hours to booking time"""
     try:
@@ -175,12 +223,12 @@ def calculate_end_time(booking_time):
 
 def validate_csv_structure(df):
     """Validate that the CSV has required columns"""
-    required_columns = ['name', 'table_number', 'booking_time', 'party_size']
-    missing_columns = [col for col in required_columns if col not in df.columns.str.lower()]
+    required_columns = ["Service or Event", "Time", "Number of People", "Customer", "Table(s)"]
+    missing_columns = [col for col in required_columns if col not in df.columns]
     
     if missing_columns:
         st.error(f"Missing required columns: {missing_columns}")
-        st.info("Required columns: name, table_number, booking_time, party_size")
+        st.info("Required columns: Service or Event, Time, Number of People, Customer, Table(s)")
         return False
     return True
 
@@ -327,15 +375,19 @@ def create_single_card(row, title_style, content_style, design_specs, card_width
     
     # Create card content
     reserved_title = Paragraph("<b>RESERVED</b>", header_style)
-    name = Paragraph(f"<b>{row['name']}</b>", title_style)
-    time_range = calculate_end_time(row['booking_time'])
+    capitalized_name = capitalize_customer_name(row['Customer'])
+    name = Paragraph(f"<b>{capitalized_name}</b>", title_style)
+    time_range = calculate_end_time(row['Time'])
     time_info = Paragraph(f"{time_range}", content_style)
     empty_space = Paragraph("", content_style)
     
+    # Extract and clean table numbers
+    table_numbers = extract_table_numbers(row['Table(s)'])
+    
     # Create bottom row with table and party info
     table_party_data = [
-        [Paragraph(f"T{row['table_number']}", left_style), 
-         Paragraph(f"{row['party_size']}P", right_style)]
+        [Paragraph(f"T{table_numbers}", left_style), 
+         Paragraph(f"{row['Number of People']}P", right_style)]
     ]
     
     table_party_table = Table(
@@ -401,21 +453,51 @@ def main():
     uploaded_file = st.file_uploader(
         "Choose a CSV file with booking data",
         type="csv",
-        help="CSV should contain columns: name, table_number, booking_time, party_size"
+        help="CSV should contain columns: Service or Event, Time, Number of People, Customer, Table(s)"
     )
     
     if uploaded_file is not None:
         try:
             # Read CSV
-            df = pd.read_csv(uploaded_file)
+            df = pd.read_csv(uploaded_file, index_col=False)
+            df2 = df.copy()[["Service or Event", "Time", "Number of People", "Customer", "Table(s)"]]
             
             # Show data preview
             st.subheader("Data Preview")
-            st.dataframe(df.head())
+            st.dataframe(df2.head())
             
             # Validate structure
-            if validate_csv_structure(df):
-                st.success(f"✅ Found {len(df)} bookings ready for placecard generation")
+            if validate_csv_structure(df2):
+                st.success(f"✅ Found {len(df2)} bookings in the uploaded file")
+                
+                # Service/Event filtering
+                st.header("📅 Filter by Service Period")
+                
+                filter_option = st.radio(
+                    "Choose which service to generate placecards for:",
+                    ["All bookings", "Lunch only", "Dinner only"],
+                    index=0,
+                    help="Select whether to include all bookings or filter by service type"
+                )
+                
+                # Apply filtering based on selection
+                if filter_option == "Lunch only":
+                    filtered_df = df2[df2['Service or Event'].str.lower().str.contains('lunch', na=False)]
+                    st.info(f"📋 Filtered to {len(filtered_df)} **Lunch** bookings")
+                elif filter_option == "Dinner only":
+                    filtered_df = df2[df2['Service or Event'].str.lower().str.contains('dinner', na=False)]
+                    st.info(f"📋 Filtered to {len(filtered_df)} **Dinner** bookings")
+                else:
+                    filtered_df = df2
+                    st.info(f"📋 Including all {len(filtered_df)} bookings")
+                
+                # Show filtered data preview
+                if len(filtered_df) > 0:
+                    st.subheader("Filtered Data Preview")
+                    st.dataframe(filtered_df.head())
+                else:
+                    st.warning("⚠️ No bookings found for the selected service period.")
+                    st.stop()
                 
                 # Design customization
                 st.header("🎨 Design Settings")
@@ -473,15 +555,23 @@ def main():
                 if st.button("🎫 Generate Placecards", type="primary"):
                     with st.spinner("Generating placecards..."):
                         try:
-                            pdf_buffer = generate_placecards(df, design_specs)
+                            pdf_buffer = generate_placecards(filtered_df, design_specs)
                             
                             st.success("✅ Placecards generated successfully!")
+                            
+                            # Create filename based on service selection
+                            if filter_option == "Lunch only":
+                                filename = "brewvino_placecards_lunch.pdf"
+                            elif filter_option == "Dinner only":
+                                filename = "brewvino_placecards_dinner.pdf"
+                            else:
+                                filename = "brewvino_placecards_all_services.pdf"
                             
                             # Download button
                             st.download_button(
                                 label="📥 Download Placecards PDF",
                                 data=pdf_buffer.getvalue(),
-                                file_name="brewvino_placecards.pdf",
+                                file_name=filename,
                                 mime="application/pdf"
                             )
                             
