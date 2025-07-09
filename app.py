@@ -138,16 +138,33 @@ def generate_preview_card(design_specs):
         return None
 
 def capitalize_customer_name(name):
-    """Properly capitalize customer names"""
+    """Properly capitalize customer names and filter out non-printable characters"""
+    import re
+    
     if pd.isna(name) or name == "":
         return "Guest"
     
     # Convert to string and strip whitespace
     name = str(name).strip()
     
+    # Filter out problematic characters while keeping:
+    # - Unicode letters (including accented characters)
+    # - Numbers
+    # - Spaces
+    # - Apostrophes, hyphens, and periods
+    # This regex keeps letters (including accented), numbers, spaces, apostrophes, hyphens, and periods
+    name = re.sub(r'[^\w\s\'\-\.]', '', name, flags=re.UNICODE)
+    
+    # Remove extra spaces and strip again
+    name = ' '.join(name.split())
+    
     # Handle special cases
     if name.lower() == "walk in":
         return "Walk In"
+    
+    # If name is empty after filtering, return Guest
+    if not name:
+        return "Guest"
     
     # Split by spaces and capitalize each word
     words = name.split()
@@ -242,21 +259,21 @@ def generate_placecards(df, design_specs):
     doc = SimpleDocTemplate(
         buffer,
         pagesize=page_size,
-        rightMargin=design_specs["margin"] * inch,
-        leftMargin=design_specs["margin"] * inch,
-        topMargin=design_specs["margin"] * inch,
-        bottomMargin=design_specs["margin"] * inch
+        rightMargin=0,
+        leftMargin=0,
+        topMargin=0,
+        bottomMargin=0
     )
     
-    # Calculate available space for cards
-    page_width = page_size[0] - (2 * design_specs["margin"] * inch)
-    page_height = page_size[1] - (2 * design_specs["margin"] * inch)
+    # Calculate available space for cards (full page size now)
+    page_width = page_size[0]
+    page_height = page_size[1]
     
     # Adjust card size to fit 2x2 grid with no spacing (borders touching)
     # Reduce height slightly to ensure 2 rows fit properly
     card_width = page_width / 2
-    card_height = (page_height / 2) * 0.95  # Reduce height by 5% to ensure proper fit
-    
+    card_height = (page_height / 2) * 0.98  # Reduce height by 2% to ensure proper fit
+
     # Create styles
     styles = getSampleStyleSheet()
     title_style = ParagraphStyle(
@@ -495,6 +512,69 @@ def main():
                 if len(filtered_df) > 0:
                     st.subheader("Filtered Data Preview")
                     st.dataframe(filtered_df.head())
+                    
+                    # Individual booking selection
+                    st.header("🎯 Select Individual Bookings")
+                    
+                    selection_option = st.radio(
+                        "Choose selection method:",
+                        ["Generate all filtered bookings", "Select specific bookings"],
+                        index=0,
+                        help="Choose whether to generate placecards for all filtered bookings or select specific ones"
+                    )
+                    
+                    if selection_option == "Select specific bookings":
+                        st.subheader("📋 Choose Bookings")
+                        
+                        # Create a more readable display for selection
+                        booking_options = []
+                        for idx, row in filtered_df.iterrows():
+                            customer_name = capitalize_customer_name(row['Customer'])
+                            table_numbers = extract_table_numbers(row['Table(s)'])
+                            time_display = row['Time']
+                            party_size = row['Number of People']
+                            
+                            display_text = f"{customer_name} | Table T{table_numbers} | {time_display} | {party_size} people"
+                            booking_options.append((idx, display_text))
+                        
+                        # Multi-select for bookings
+                        selected_indices = []
+                        
+                        # Use columns for better layout
+                        cols = st.columns(2)
+                        
+                        # Split bookings into two columns
+                        half = len(booking_options) // 2 + (len(booking_options) % 2)
+                        
+                        with cols[0]:
+                            st.write("**First Half:**")
+                            for i, (idx, display_text) in enumerate(booking_options[:half]):
+                                if st.checkbox(display_text, key=f"booking_{idx}"):
+                                    selected_indices.append(idx)
+                        
+                        with cols[1]:
+                            if len(booking_options) > half:
+                                st.write("**Second Half:**")
+                                for i, (idx, display_text) in enumerate(booking_options[half:]):
+                                    if st.checkbox(display_text, key=f"booking_{idx}"):
+                                        selected_indices.append(idx)
+                        
+                        # Filter to selected bookings
+                        if selected_indices:
+                            final_df = filtered_df.loc[selected_indices]
+                            st.success(f"✅ Selected {len(final_df)} booking(s) for placecard generation")
+                            
+                            # Show selected bookings preview
+                            st.subheader("Selected Bookings Preview")
+                            st.dataframe(final_df)
+                        else:
+                            st.warning("⚠️ Please select at least one booking to generate placecards.")
+                            final_df = pd.DataFrame()  # Empty dataframe
+                    else:
+                        # Use all filtered bookings
+                        final_df = filtered_df
+                        st.info(f"📋 Will generate placecards for all {len(final_df)} filtered bookings")
+                    
                 else:
                     st.warning("⚠️ No bookings found for the selected service period.")
                     st.stop()
@@ -553,30 +633,36 @@ def main():
                 
                 # Generate placecards
                 if st.button("🎫 Generate Placecards", type="primary"):
-                    with st.spinner("Generating placecards..."):
-                        try:
-                            pdf_buffer = generate_placecards(filtered_df, design_specs)
-                            
-                            st.success("✅ Placecards generated successfully!")
-                            
-                            # Create filename based on service selection
-                            if filter_option == "Lunch only":
-                                filename = "brewvino_placecards_lunch.pdf"
-                            elif filter_option == "Dinner only":
-                                filename = "brewvino_placecards_dinner.pdf"
-                            else:
-                                filename = "brewvino_placecards_all_services.pdf"
-                            
-                            # Download button
-                            st.download_button(
-                                label="📥 Download Placecards PDF",
-                                data=pdf_buffer.getvalue(),
-                                file_name=filename,
-                                mime="application/pdf"
-                            )
-                            
-                        except Exception as e:
-                            st.error(f"Error generating placecards: {str(e)}")
+                    # Check if we have bookings to generate
+                    if len(final_df) == 0:
+                        st.error("❌ No bookings selected for placecard generation. Please select at least one booking.")
+                    else:
+                        with st.spinner("Generating placecards..."):
+                            try:
+                                pdf_buffer = generate_placecards(final_df, design_specs)
+                                
+                                st.success("✅ Placecards generated successfully!")
+                                
+                                # Create filename based on service selection and selection method
+                                if selection_option == "Select specific bookings":
+                                    filename = f"brewvino_placecards_selected_{len(final_df)}_bookings.pdf"
+                                elif filter_option == "Lunch only":
+                                    filename = "brewvino_placecards_lunch.pdf"
+                                elif filter_option == "Dinner only":
+                                    filename = "brewvino_placecards_dinner.pdf"
+                                else:
+                                    filename = "brewvino_placecards_all_services.pdf"
+                                
+                                # Download button
+                                st.download_button(
+                                    label="📥 Download Placecards PDF",
+                                    data=pdf_buffer.getvalue(),
+                                    file_name=filename,
+                                    mime="application/pdf"
+                                )
+                                
+                            except Exception as e:
+                                st.error(f"Error generating placecards: {str(e)}")
         
         except Exception as e:
             st.error(f"Error reading CSV file: {str(e)}")
